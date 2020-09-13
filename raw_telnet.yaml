@@ -1,0 +1,50 @@
+---
+- name: Execute telnet command
+  hosts: all
+  gather_facts: False
+  connection: local
+  serial: 1
+  vars:
+    date: "{{ lookup('pipe', 'date +%Y%m%d_%H-%M') }}"
+
+  tasks:
+
+    - block: 
+      - name: Send configuration commands to like Cisco IOS
+        telnet:
+          user: "{{ telnet_login }}"
+          password: "{{ telnet_pass }}"
+          login_prompt: "Username: "
+          prompts:
+            - ">"
+            - "#"
+            - "Password:"
+          command:
+            - enable
+            - "{{ telnet_pass }}"
+            - terminal length 0
+            - sh run int gi0/0/0.404
+        register: command_result
+        ignore_errors: yes
+      - include_tasks: save_results.yaml
+      when: device == "cisco"
+
+    - block:
+      - name: Send configuration commands to Dlink
+        telnet:
+          user: "{{ telnet_login }}"
+          password: "{{ telnet_pass }}"
+          login_prompt: "UserName:"
+          password_prompt: "PassWord:"
+          prompts:
+            - "#"
+          command:
+            - sh fdb vlan 404
+        register: command_result
+        ignore_errors: yes
+      - include_tasks: save_results.yaml
+      when: device == "dlink"
+
+
+
+

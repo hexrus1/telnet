@@ -1,0 +1,15 @@
+---
+- block:
+  - name: Print out command
+    debug:
+      var: command_result.output
+
+  - name: Ensure a directory exists ./result.output/
+    file:
+      path: ./result.output/
+      state: directory
+
+  - name: "Save output ./result.output/{{ inventory_hostname }}_{{ date }}.txt"
+    copy:
+      content: "{{ command_result.output | join('\n') }}"
+      dest: "./result.output/{{ inventory_hostname }}_{{ date }}.txt"
